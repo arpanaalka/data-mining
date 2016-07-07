@@ -1,0 +1,53 @@
+data=csvread('/home/arpana/as2/aa/Data2.csv');
+[r,c] = size(data);
+%x = ones(r,c);
+%x(:,2:3) = data(:,1:2);
+%y = data(:,3);
+
+
+%normalization
+
+mindata=min(data(:,1:2));
+maxdata=max(data(:,1:2));
+data(:,1:2)=(data(:,1:2)-mindata)./(maxdata-mindata);
+
+%normalization end
+
+%hold on 
+b=floor(0.7*r);
+v = ones(1:r-b,1:3);
+t = ones(1:b,1:3);
+
+t(1:b,2:3) = data(1:b,1:2);
+v(1:r-b,2:3) = data(b+1:r,1:2);
+%hold on end
+
+
+%validation
+omega = zeros(c,1);
+v(1:r-b,2:3) = data(b+1:r,1:2);
+vy = data(b+1:r,3);
+[omega] = validationr(omega,x,y,v,vy,alpha);
+
+
+%plot
+figure;
+X=[ones(r,1) data(:,1:2)];
+size(X)
+Y = X*omega;
+size(Y)
+Y-data(:,3);
+%plot(data(:,1), data(:,2)
+x1=linspace(-4,4,100);
+x2=linspace(-4,4,100);
+y=zeros(100,100);
+for i=1:100
+  for j=1:100
+    y(i,j) = omega'*[1;x1(i);x2(j)];
+  end
+end
+y=y';
+surf(x1,x2,y);
+hold on;
+plot3(data(:,1), data(:,2), data(:,3));
+hold off;
