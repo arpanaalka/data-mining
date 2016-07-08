@@ -1,4 +1,4 @@
- %function []= DBSCAN(eps,minpts)
+ function []= DBSCAN(eps,minpts)
 X = csvread('/home/arpana/datam/cluster2.csv');
 [r,c]=size(X);
 visit = zeros(r,1);
