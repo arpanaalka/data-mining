@@ -68,3 +68,4 @@ fn = sum(and(yV,~outV))
 accuracy = (tp+tn)/(tp+tn+fp+fn)
 
 
+
