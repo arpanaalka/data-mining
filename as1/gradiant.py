@@ -1,4 +1,3 @@
-
 """gradient.py#################################################################
 1.read data
 2.normalize data using min,max formula
@@ -51,27 +50,31 @@ def  gradient(tdata, vdata, ty, vy, alpha, omega, numiter):
     new_fxv = np.dot(vdata, w[:, 0])
     diff = new_fxv - vy
     error = np.dot(diff.transpose(), diff) / vlen
+    print w
     #w and error for more iteration
-    for i in range(1, numiter):
-        print i
-        print w[:, 1]
-        b = w[:, i]
+    for i in range(1, 5):
+        b = np.matrix(w[:, i])
         new_fx = np.dot(tdata, b)
+        #print new_fx
         deltaj = ((new_fx - ty).transpose()) * tdata
+        #print deltaj
         deltaj = deltaj.transpose()
-        w[:, i] = w[:, i - 1] - alpha * deltaj
-        #new_fxv = vdata * w[:, 0]
+        #print deltaj
+        w = np.c_[w, w[:, i] - alpha * deltaj]
+        #print w
 
-        new_fxv = np.dot(vdata, w[:, 0])
+        new_fxv = np.dot(vdata, w[:, i])
         diff = new_fxv - vy
         errori = np.dot(diff.transpose(), diff) / vlen
         error = np.c_[error, errori]
-
+    print error
+    #print w
     min_omega_arg = np.argmin(error)
-    print error
     print min_omega_arg
+    #print error
+    #print min_omega_arg
     return w[:, min_omega_arg]
-    print error
+    #print error
 
 if __name__ == '__main__':
 
@@ -84,7 +87,7 @@ if __name__ == '__main__':
     minx = allx.min(axis=0)
     maxx = allx.max(axis=0)
     allx = (allx - minx) / (maxx - allx)
-    	
+
     #holdon
     b = np.floor(0.7 * m)
     tdata = np.zeros((b, 3), int)
