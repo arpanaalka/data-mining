@@ -1,0 +1,84 @@
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import LabelEncoder
+import random
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import GradientBoostingClassifier
+import matplotlib.pyplot as plt
+
+train=pd.read_csv("tree.csv")
+test=pd.read_csv("test.csv")
+train['Type']='Train'
+test['Type']='Test'
+testtemp=test
+fullData = pd.concat([train,test],axis=0)
+print fullData.columns
+ID_col=["Customer"]
+target_col=["Response"]
+cat_cols=['Coverage', 'Education', 'Effective To Date', 'EmploymentStatus', 'Gender',  'Location Code', 'Marital Status', 'Monthly Premium Auto', 'Policy','Policy Type', 'Renew Offer Type', 'Response', 'Sales Channel','State', 'Vehicle Class','Vehicle Size']
+
+num_cols= list(set(list(fullData.columns))-set(cat_cols)-set(ID_col)-set(target_col))
+
+other_col=['Type']
+num_cat_cols = num_cols+cat_cols
+
+for var in num_cat_cols:
+    if fullData[var].isnull().any()==True:
+        fullData[var+'_NA']=fullData[var].isnull()*1 
+
+
+fullData[num_cols] = fullData[num_cols].fillna(fullData[num_cols].mean(),inplace=True)
+
+fullData[cat_cols] = fullData[cat_cols].fillna(value = -9999)
+
+for var in cat_cols:
+	number = LabelEncoder()
+	fullData[var] = number.fit_transform(fullData[var].astype('str'))
+
+fullData["Response"] = number.fit_transform(fullData["Response"].astype('str'))
+
+train=fullData[fullData['Type']=='Train']
+test=fullData[fullData['Type']=='Test']
+
+train['is_train'] = np.random.uniform(0, 1, len(train)) <= .75
+Train, Validate = train[train['is_train']==True], train[train['is_train']==False]
+print len(train)
+print len(Train),":train"
+print len(Validate),":validate"
+
+features=list(set(list(fullData.columns))-set(ID_col)-set(target_col)-set(other_col))
+
+x_train = Train[list(features)].values
+y_train = Train["Response"].values
+x_validate = Validate[list(features)].values
+y_validate = Validate["Response"].values
+x_test=test[list(features)].values
+
+random.seed(100)
+rf = RandomForestClassifier(n_estimators=50,max_depth=12)
+rf.fit(x_train, y_train)
+
+#status = rf.predict_proba(x_validate)
+
+final_status = rf.predict_proba(x_test)
+test["predResponse"]=final_status[:,1]
+l=len(final_status)
+temp=np.ones(l)
+for i in range(0,l) :
+	if final_status[i,1] <=.7:
+		temp[i]=2
+test["intResponse"]=temp
+test["charResponse"]=testtemp["Response"]
+
+#for plot
+pred=temp
+given=test["Response"]
+y=pred-given
+x=np.linspace(0,l,num=l)
+plt.plot(x,y,'x')
+plt.ylim([-1,2])
+plt.show()
+	
+test.to_csv('testtree_output1.csv',columns=['Customer','predResponse','intResponse','charResponse'])
+
+
